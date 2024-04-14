@@ -15,7 +15,7 @@ func NewParcelStore(db *sql.DB) ParcelStore {
 func (s ParcelStore) Add(p Parcel) (int, error) {
 	res, err := s.db.Exec("INSERT INTO parcel (client, status, address, created_at) VALUES (:client, :status, :address, :created_at)",
 		sql.Named("client", p.Client),
-		sql.Named("status", ParcelStatusRegistered),
+		sql.Named("status", p.Status),
 		sql.Named("address", p.Address),
 		sql.Named("created_at", p.CreatedAt))
 	if err != nil {
@@ -66,8 +66,7 @@ func (s ParcelStore) GetByClient(client int) ([]Parcel, error) {
 }
 
 func (s ParcelStore) SetStatus(number int, status string) error {
-	_, err := s.db.Exec("UPDATE parcel SET status = :newStatus WHERE number = :number and status = :curStatus",
-		sql.Named("curStatus", ParcelStatusRegistered),
+	_, err := s.db.Exec("UPDATE parcel SET status = :newStatus WHERE number = :number",
 		sql.Named("number", number),
 		sql.Named("newStatus", status))
 
@@ -75,7 +74,8 @@ func (s ParcelStore) SetStatus(number int, status string) error {
 }
 
 func (s ParcelStore) SetAddress(number int, address string) error {
-	_, err := s.db.Exec("UPDATE parcel SET address = :address WHERE number = :number",
+	_, err := s.db.Exec("UPDATE parcel SET address = :address WHERE number = :number and status = :status",
+		sql.Named("status", ParcelStatusRegistered),
 		sql.Named("number", number),
 		sql.Named("address", address))
 
